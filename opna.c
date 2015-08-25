@@ -114,20 +114,6 @@ opna_close(void)
 }
 
 /*
- * Register read/write
- */
-u_int8_t
-opna_read(u_int8_t index)
-{
-	u_int8_t ret;
-
-	*opna_bi_reg = index;
-	ret = *opna_bd_reg;
-
-	return ret;
-}
-
-/*
  * OPNA needs wait cycles
  *  after address write: 17 cycles @ 8MHz = 2.125 us 
  *  after data write   : 83 cycles @ 8MHz = 10.375 us
@@ -141,6 +127,21 @@ struct timespec opna_wait_wdata = {
 	.tv_sec = 0,
 	.tv_nsec = 10375
 };
+
+/*
+ * Register read/write
+ */
+u_int8_t
+opna_read(u_int8_t index)
+{
+	u_int8_t ret;
+
+	*opna_bi_reg = index;
+	nanosleep(&opna_wait_waddr, NULL);
+	ret = *opna_bd_reg;
+
+	return ret;
+}
 
 void
 opna_write(u_int8_t index, u_int8_t data)
