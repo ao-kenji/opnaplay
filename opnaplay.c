@@ -22,8 +22,6 @@
 #include <stdio.h>
 #include <stdlib.h>	/* getprogname(3) */
 #include <unistd.h>	/* getopt(3), usleep(3) */
-#include <sys/ioctl.h>	/* ioctl(2) */
-#include <sys/mman.h>	/* mmap(2) */
 #include <machine/pcex.h>
 
 #include "opna.h"
