@@ -6,7 +6,7 @@
 
 #include "opna.h"
 
-const struct fmsound fmsound_lib[] = {
+const struct timbre timbre_lib[] = {
 	/* Aco Piano2 (Attack) */
 	{   4,   5,
 	   31,   5,   0,   0,   0,  23,   1,   1,   3,   0,

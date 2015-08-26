@@ -33,7 +33,7 @@
 
 /* global */
 int	opna_debug = 0;
-int	opna_nsound = 0;	/* number of pre-defined sounds */
+int	opna_ntimbres = 0;	/* number of pre-defined timbres */
 int	pcexio_fd;
 u_int8_t *pcexio_base;
 u_int8_t *opna_bi_reg;	/* YM2608 Basic Index register */
@@ -41,7 +41,7 @@ u_int8_t *opna_bd_reg;	/* YM2608 Basic Data register */
 u_int8_t *opna_ei_reg;	/* YM2608 Extended Index register */
 u_int8_t *opna_ed_reg;	/* YM2608 Extended Data register */
 
-extern struct fmsound fmsound_lib[];
+extern struct timbre timbre_lib[];
 
 u_int16_t F_number[] = {
 	 654,	/* C# */
@@ -73,9 +73,9 @@ opna_init(void)
 	opna_write(0x29, data);
 
 #if 0
-	opna_nsound = sizeof(fmsound_lib) / sizeof(fmsound_lib[0]);
+	opna_ntimbres = sizeof(timbre_lib) / sizeof(timbre_lib[0]);
 #endif
-	opna_nsound = 2;
+	opna_ntimbres = 2;
 }
 
 /*
@@ -167,58 +167,58 @@ int
 opna_set_sound(int ch, int index)
 {
 	u_int8_t data;
-	struct fmsound *sp;
+	struct timbre *tp;
 
-	if ((index < 0) || (index >= opna_nsound)) {
-		printf("index %d: out of range\n");
+	if ((index < 0) || (index >= opna_ntimbres)) {
+		printf("index %d: out of range\n", index);
 		return -1;
 	}
 
 	if ((ch < 0) || (ch > 2)) {
-		printf("ch %d: out of range\n");
+		printf("ch %d: out of range\n", ch);
 		return -1;
 	}
 
-	sp = &fmsound_lib[index];
+	tp = &timbre_lib[index];
 
 	/* Detune(3bit) & Multiple(4bit) */
-	opna_write(0x30 + ch, (sp->DT11 << 4) | sp->ML1);	/* op 1 */
-	opna_write(0x38 + ch, (sp->DT12 << 4) | sp->ML2);	/* op 2 */
-	opna_write(0x34 + ch, (sp->DT13 << 4) | sp->ML3);	/* op 3 */
-	opna_write(0x3c + ch, (sp->DT14 << 4) | sp->ML4);	/* op 4 */
+	opna_write(0x30 + ch, (tp->DT11 << 4) | tp->ML1);	/* op 1 */
+	opna_write(0x38 + ch, (tp->DT12 << 4) | tp->ML2);	/* op 2 */
+	opna_write(0x34 + ch, (tp->DT13 << 4) | tp->ML3);	/* op 3 */
+	opna_write(0x3c + ch, (tp->DT14 << 4) | tp->ML4);	/* op 4 */
 
 	/* Total Level(7bit) */
-	opna_write(0x40 + ch, sp->TL1);
-	opna_write(0x48 + ch, sp->TL2);
-	opna_write(0x44 + ch, sp->TL3);
-	opna_write(0x4c + ch, sp->TL4);
+	opna_write(0x40 + ch, tp->TL1);
+	opna_write(0x48 + ch, tp->TL2);
+	opna_write(0x44 + ch, tp->TL3);
+	opna_write(0x4c + ch, tp->TL4);
 
 	/* Key Scale(2bit) & Attack Rate(5bit) */
-	opna_write(0x50 + ch, (sp->KS1 << 6) | sp->AR1);
-	opna_write(0x58 + ch, (sp->KS2 << 6) | sp->AR2);
-	opna_write(0x54 + ch, (sp->KS3 << 6) | sp->AR3);
-	opna_write(0x5c + ch, (sp->KS4 << 6) | sp->AR4);
+	opna_write(0x50 + ch, (tp->KS1 << 6) | tp->AR1);
+	opna_write(0x58 + ch, (tp->KS2 << 6) | tp->AR2);
+	opna_write(0x54 + ch, (tp->KS3 << 6) | tp->AR3);
+	opna_write(0x5c + ch, (tp->KS4 << 6) | tp->AR4);
 
 	/* AMON(1bit) & Decay Rate(5bit) */
-	opna_write(0x60 + ch, (sp->AMS1 << 7) | sp->DR1);
-	opna_write(0x68 + ch, (sp->AMS2 << 7) | sp->DR2);
-	opna_write(0x64 + ch, (sp->AMS3 << 7) | sp->DR3);
-	opna_write(0x6c + ch, (sp->AMS4 << 7) | sp->DR4);
+	opna_write(0x60 + ch, (tp->AMS1 << 7) | tp->DR1);
+	opna_write(0x68 + ch, (tp->AMS2 << 7) | tp->DR2);
+	opna_write(0x64 + ch, (tp->AMS3 << 7) | tp->DR3);
+	opna_write(0x6c + ch, (tp->AMS4 << 7) | tp->DR4);
 
 	/* Sustain Rate(5bit) */
-	opna_write(0x70 + ch, sp->SR1);
-	opna_write(0x78 + ch, sp->SR2);
-	opna_write(0x74 + ch, sp->SR3);
-	opna_write(0x7c + ch, sp->SR4);
+	opna_write(0x70 + ch, tp->SR1);
+	opna_write(0x78 + ch, tp->SR2);
+	opna_write(0x74 + ch, tp->SR3);
+	opna_write(0x7c + ch, tp->SR4);
 
 	/* Sustain Level(4bit) & Release Rate(4bit) */
-	opna_write(0x80 + ch, (sp->SL1 << 4) | sp->RR1);
-	opna_write(0x88 + ch, (sp->SL2 << 4) | sp->RR2);
-	opna_write(0x84 + ch, (sp->SL3 << 4) | sp->RR3);
-	opna_write(0x8c + ch, (sp->SL4 << 4) | sp->RR4);
+	opna_write(0x80 + ch, (tp->SL1 << 4) | tp->RR1);
+	opna_write(0x88 + ch, (tp->SL2 << 4) | tp->RR2);
+	opna_write(0x84 + ch, (tp->SL3 << 4) | tp->RR3);
+	opna_write(0x8c + ch, (tp->SL4 << 4) | tp->RR4);
 
 	/* Self-Feedback & Algorythm */
-	opna_write(0xB0 + ch, (sp->FB << 3) | sp->AL);
+	opna_write(0xB0 + ch, (tp->FB << 3) | tp->AL);
 
 	/* L&R on */
 	data = opna_read(0xb4 + ch);
@@ -226,8 +226,7 @@ opna_set_sound(int ch, int index)
 	opna_write(0xb4 + ch, data);
 
 	/* f-number, block -> 'A4' */
-	opna_write(0xa4 + ch, 0x24);
-	opna_write(0xa0 + ch, 0x0e);
+	opna_set_note(ch, 4, NOTE_A);
 	
 	return 0;
 }

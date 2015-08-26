@@ -28,7 +28,7 @@ int	opna_set_note(int, int, int);
 int	opna_set_sound(int, int);
 
 /* structure */
-struct fmsound {
+struct timbre {
 	u_int8_t AL;
 	u_int8_t FB;
 	u_int8_t AR1, DR1, SR1, RR1, SL1, TL1, KS1, ML1, DT11, AMS1;
