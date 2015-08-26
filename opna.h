@@ -21,12 +21,11 @@
  */
 
 /* prototypes */
-int		opna_open(void);
-void		opna_close(void);
-u_int8_t	opna_read(u_int8_t);
-void		opna_write(u_int8_t, u_int8_t);
-void		opna_set_debug_level(int);
-int		opna_set_sound(int, int);
+int	opna_open(void);
+void	opna_close(void);
+void	opna_set_debug_level(int);
+int	opna_set_note(int, int, int);
+int	opna_set_sound(int, int);
 
 /* structure */
 struct fmsound {

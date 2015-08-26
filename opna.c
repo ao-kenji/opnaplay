@@ -58,6 +58,10 @@ u_int16_t F_number[] = {
 	1234,	/* C  */
 };
 
+/* prototypes (internal use) */
+u_int8_t	opna_read(u_int8_t);
+void		opna_write(u_int8_t, u_int8_t);
+
 void
 opna_init(void)
 {
@@ -224,11 +228,6 @@ opna_set_sound(int ch, int index)
 	/* f-number, block -> 'A4' */
 	opna_write(0xa4 + ch, 0x24);
 	opna_write(0xa0 + ch, 0x0e);
-#if 0
-	/* f-number, block -> 'A4' */
-	opna_write(0xa4 + ch, 0x24);
-	opna_write(0xa0 + ch, 0xe0);
-#endif
 	
 	return 0;
 }
