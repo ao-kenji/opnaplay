@@ -26,6 +26,11 @@ void	opna_close(void);
 void	opna_set_debug_level(int);
 int	opna_set_note(int, int, int);
 int	opna_set_sound(int, int);
+int	opna_wait_ms(int);
+
+extern int	opna_ntimbres;
+extern int	opna_tempo;
+extern int	opna_timbre;
 
 /* structure */
 struct timbre {
@@ -36,17 +41,3 @@ struct timbre {
 	u_int8_t AR3, DR3, SR3, RR3, SL3, TL3, KS3, ML3, DT13, AMS3;
 	u_int8_t AR4, DR4, SR4, RR4, SL4, TL4, KS4, ML4, DT14, AMS4;
 };
-
-/* notes */
-#define NOTE_C_S	 0	/* C# */
-#define NOTE_D		 1	/* D  */
-#define NOTE_D_S	 2	/* D# */
-#define NOTE_E		 3	/* E  */
-#define NOTE_F		 4	/* F  */
-#define NOTE_F_S	 5	/* F# */
-#define NOTE_G		 6	/* G  */
-#define NOTE_G_S	 7	/* G# */
-#define NOTE_A		 8	/* A  */
-#define NOTE_A_S	 9	/* A# */
-#define NOTE_B		10	/* B  */
-#define NOTE_C		11	/* C  */

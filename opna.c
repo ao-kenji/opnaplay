@@ -15,25 +15,23 @@
  */
 
 /*
- * PC-9801 extension board bus test program
+ * handle PC-9801-86 FM synth part
  */
 
 #include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>	/* getprogname(3) */
 #include <time.h>	/* nanosleep(2) */
-#include <unistd.h>	/* getopt(3), usleep(3) */
-#include <sys/ioctl.h>	/* ioctl(2) */
 #include <sys/mman.h>	/* mmap(2) */
 #include <machine/pcex.h>
 
 #include "opna.h"
 
-#define DPRINTF(x)      if (debug) printf x
+#define DPRINTF(x)      if (opna_debug) printf x
 
 /* global */
 int	opna_debug = 0;
-int	opna_ntimbres = 0;	/* number of pre-defined timbres */
+int	opna_tempo = 120;
+int	opna_timbre = 0;
 int	pcexio_fd;
 u_int8_t *pcexio_base;
 u_int8_t *opna_bi_reg;	/* YM2608 Basic Index register */
@@ -42,20 +40,21 @@ u_int8_t *opna_ei_reg;	/* YM2608 Extended Index register */
 u_int8_t *opna_ed_reg;	/* YM2608 Extended Data register */
 
 extern struct timbre timbre_lib[];
+extern int opna_ntimbres;	/* number of pre-defined timbres */
 
 u_int16_t F_number[] = {
-	 654,	/* C# */
-	 692,	/* D  */
-	 734,	/* D# */
-	 777,	/* E  */
-	 823,	/* F  */
-	 872,	/* F# */
-	 924,	/* G  */
-	 979,	/* G# */
-	1038,	/* A  */
-	1099,	/* A# */
-	1165,	/* B  */
-	1234,	/* C  */
+	 617,	/* C : 261.63Hz */
+	 654,	/* C#: 277.18Hz */
+	 692,	/* D : 293.66Hz */
+	 734,	/* D#: 311.13Hz */
+	 777,	/* E : 329.63Hz */
+	 823,	/* F : 349.23Hz */
+	 872,	/* F#: 369.99Hz */
+	 924,	/* G : 392.00Hz */
+	 979,	/* G#: 415.30Hz */
+	1038,	/* A : 440.00Hz */
+	1099,	/* A#: 466.16Hz */
+	1165,	/* B : 493.88Hz */
 };
 
 /* prototypes (internal use) */
@@ -71,11 +70,6 @@ opna_init(void)
 	data = opna_read(0x29);
 	data |= 0x80;
 	opna_write(0x29, data);
-
-#if 0
-	opna_ntimbres = sizeof(timbre_lib) / sizeof(timbre_lib[0]);
-#endif
-	opna_ntimbres = 2;
 }
 
 /*
@@ -127,9 +121,14 @@ struct timespec opna_wait_waddr = {
 	.tv_nsec = 2125
 };
 
-struct timespec opna_wait_wdata = {
+struct timespec opna_wait_wdata_long = {
 	.tv_sec = 0,
 	.tv_nsec = 10375
+};
+
+struct timespec opna_wait_wdata_short = {
+	.tv_sec = 0,
+	.tv_nsec = 5875
 };
 
 /*
@@ -138,10 +137,13 @@ struct timespec opna_wait_wdata = {
 u_int8_t
 opna_read(u_int8_t index)
 {
+	static u_int8_t pre_index = 0xff;
 	u_int8_t ret;
 
 	*opna_bi_reg = index;
-	nanosleep(&opna_wait_waddr, NULL);
+	if (index == pre_index)
+		nanosleep(&opna_wait_waddr, NULL);
+	pre_index = index;
 	ret = *opna_bd_reg;
 
 	return ret;
@@ -150,11 +152,17 @@ opna_read(u_int8_t index)
 void
 opna_write(u_int8_t index, u_int8_t data)
 {
+	static u_int8_t pre_index = 0xff;
 
 	*opna_bi_reg = index;
-	nanosleep(&opna_wait_waddr, NULL);
+	if (index == pre_index)
+		nanosleep(&opna_wait_waddr, NULL);
+	pre_index = index;
 	*opna_bd_reg = data;
-	nanosleep(&opna_wait_wdata, NULL);
+	if (index < 0xa0)
+		nanosleep(&opna_wait_wdata_long, NULL);
+	else
+		nanosleep(&opna_wait_wdata_short, NULL);
 }
 
 void
@@ -180,6 +188,9 @@ opna_set_sound(int ch, int index)
 	}
 
 	tp = &timbre_lib[index];
+
+	/* Note off */
+	opna_write(0x28, 0x00 | ch);
 
 	/* Detune(3bit) & Multiple(4bit) */
 	opna_write(0x30 + ch, (tp->DT11 << 4) | tp->ML1);	/* op 1 */
@@ -225,28 +236,42 @@ opna_set_sound(int ch, int index)
 	data |= 0xc0;
 	opna_write(0xb4 + ch, data);
 
-	/* f-number, block -> 'A4' */
-	opna_set_note(ch, 4, NOTE_A);
-	
 	return 0;
 }
 
 int
-opna_set_note(int ch, int oct, int note) {
-
+opna_set_note(int ch, int blk, int note)
+{
 	if ((ch < 0) || (ch > 2)) {
 		printf("ch %d: out of range\n", ch);
 		return -1;
 	}
 
-	if ((oct < 0) || (oct > 7)) {
-		printf("octave %d: out of range\n", oct);
+	if ((blk < 0) || (blk > 7)) {
+		printf("block %d: out of range\n", blk);
 		return -1;
 	}
 
-	opna_write(0xa4 + ch, oct << 3 | ((F_number[note] & 0x700) >> 8));
+	opna_write(0xa4 + ch, blk << 3 | ((F_number[note] & 0x700) >> 8));
 	opna_write(0xa0 + ch, F_number[note] & 0x0ff);
-	printf("0x%02x, 0x%02x\n",
-		oct << 3 | ((F_number[note] & 0x700) >> 8),
-		F_number[note] & 0x0ff);
-};
+	DPRINTF(("0x%02x, 0x%02x\n",
+		blk << 3 | ((F_number[note] & 0x700) >> 8),
+		F_number[note] & 0x0ff));
+}
+
+int
+opna_wait_ms(int ms)
+{
+	struct timespec opna_wait_ns;
+
+	if ((ms < 0) || (ms > 100000)) {
+		printf("ms %d: out of range\n", ms);
+		return -1;
+	}
+
+	opna_wait_ns.tv_sec = ms / 1000;
+	opna_wait_ns.tv_nsec = (ms % 1000) * 1000 * 1000;
+
+	nanosleep(&opna_wait_ns, NULL);
+}
+

@@ -21,17 +21,23 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>	/* getprogname(3) */
-#include <unistd.h>	/* getopt(3), usleep(3) */
-#include <machine/pcex.h>
+#include <unistd.h>	/* getopt(3) */
 
+#include "mml.h"
 #include "opna.h"
 
 void	usage(void);
+void mml_callback(MML_INFO *, void *);
 
 int
 main(int argc, char **argv)
 {
-	u_int8_t val;
+
+	/* MML related */
+	MML mml;
+	MML_OPTION mml_opt;
+	MML_RESULT mr;
+	void *mml_extobj;
 
 	/*
 	 * parse options
@@ -40,10 +46,13 @@ main(int argc, char **argv)
 	extern char *optarg;
 	extern int optind, opterr;
 
-	while ((ch = getopt(argc, argv, "dr:")) != -1) {
+	while ((ch = getopt(argc, argv, "dt:")) != -1) {
 		switch (ch) {
 		case 'd':	/* debug flag */
 			opna_set_debug_level(1);
+			break;
+		case 't':	/* tone */
+			opna_timbre = atoi(optarg);
 			break;
 		default:
 			usage();
@@ -53,7 +62,12 @@ main(int argc, char **argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc != 0) {
+	if (argc != 1) {
+		usage();
+		return 1;
+	}
+
+	if ((opna_timbre < 0) || (opna_timbre >= opna_ntimbres)) {
 		usage();
 		return 1;
 	}
@@ -62,44 +76,30 @@ main(int argc, char **argv)
 		return 1;
 
 	opna_init();
-	opna_set_sound(0, 0);
-	opna_set_sound(1, 1);
+	opna_set_sound(0, opna_timbre);
 
-	opna_set_note(0, 3, NOTE_C);
-	opna_set_note(1, 4, NOTE_C);
-	opna_write(0x28, 0xf0 | 0);	/* note on ch.0 */
-	opna_write(0x28, 0xf0 | 1);	/* note on ch.0 */
-	sleep(1);
-	opna_write(0x28, 0x00 | 0);	/* note off ch.0 */
-	opna_write(0x28, 0x00 | 1);	/* note off ch.0 */
+	mml_extobj = NULL;
+	mr = mml_init(&mml, mml_callback, mml_extobj);
+	if (mr != MML_RESULT_OK) {
+		printf("[ERROR] : init failed.\n");
+		return 1;
+	}
 
-	opna_set_note(0, 4, NOTE_D);
-	opna_set_note(1, 5, NOTE_D);
-	opna_write(0x28, 0xf0 | 0);	/* note on ch.0 */
-	opna_write(0x28, 0xf0 | 1);	/* note on ch.0 */
-	sleep(1);
-	opna_write(0x28, 0x00 | 0);	/* note off ch.0 */
-	opna_write(0x28, 0x00 | 1);	/* note off ch.0 */
+	MML_OPTION_INITIALIZER_DEFAULT(&mml_opt);
+	mr = mml_setup(&mml, &mml_opt, argv[0]);
+	if (mr != MML_RESULT_OK) {
+		printf("[ERROR] : setup failed (input text='%s').\n", argv[0]);
+	}
 
-	opna_set_note(0, 4, NOTE_E);
-	opna_set_note(1, 5, NOTE_E);
-	opna_write(0x28, 0xf0 | 0);	/* note on ch.0 */
-	opna_write(0x28, 0xf0 | 1);	/* note on ch.0 */
-	sleep(1);
-	opna_write(0x28, 0x00 | 0);	/* note off ch.0 */
-	opna_write(0x28, 0x00 | 1);	/* note off ch.0 */
+	while ((mr = mml_fetch(&mml)) == MML_RESULT_OK) {
+	}
 
-	opna_write(0x28, 0xf0 | 1);
-	sleep(1);
-	opna_write(0x28, 0x00 | 1);
-
-	/* something to do */
-
-	val = opna_read(0xff);
-	printf("reg(0xff) = 0x%02x\n", val);
+	if (mr != MML_RESULT_EOT) {
+		printf("[ERROR] : The error code is %d.\n", (int)mr);
+	}
 
 	opna_close();
-	return 0;
+	return (mr == MML_RESULT_EOT) ? 0 : (int)mr;
 }
 
 /*
@@ -108,7 +108,9 @@ main(int argc, char **argv)
 void
 usage(void)
 {
-	printf("Usage: %s [options]\n", getprogname());
-	printf("\t-d	: debug flag\n");
+	printf("Usage: %s [options] 'MML string'\n", getprogname());
+	printf("\t-d        : debug flag\n");
+	printf("\t-t number : specify timbre number (0 to %d)\n",
+	    opna_ntimbres - 1);
 	exit(1);
 }
