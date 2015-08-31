@@ -1,7 +1,7 @@
 opnaplay
 ========
 
-opnaplay - tweaking PC-9801-86 FM-synth part on OpenBSD/luna88k
+opnaplay - A tiny PC-9801-86 FM-synth MML player on OpenBSD/luna88k
 
 This is my experimental program to use the FM-synth part of PC-9801-86 sound
 board on OpenBSD/luna88k.
