@@ -22,5 +22,24 @@ Build by 'make'.  The executable binary is 'opnaplay'.
 Run
 ---
 ```
-% ./opnaplay
+% ./opnaplay [-d] [-t timbre number] 'MML strings'
 ```
+
+Example
+-------
+This MML plays 'Sakura Sakura' (Japanese song).
+```
+% ./opnaplay 't120 o4 l4 aab2 aab2 ab>c<b a b8a8 f2 ecef e e8c8<b2> ab>c<b ab8a8f2 ecef ee8c8<b2> aab2 aab2 efb8a8f e1'
+```
+
+Special Thanks
+--------------
+This program uses: 
+
+'A tiny MML parser' 
+Copyright (C) 2014-2015 Shinichiro Nakamura (CuBeatSystems)
+http://www.cubeatsystems.com/firmware/tinymml/index.html
+
+FM sound parameters
+VALSOUND FM-Library / (C)Takeshi Abo.
+http://www.valsound.com/
