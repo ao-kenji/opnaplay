@@ -1,7 +1,8 @@
 /*
- * Originally from:
- * VALSOUND FM-Library 
- * http://www.valsound.com/fm_lib.html
+ * FM sound parameters are originally from:
+ *
+ *  VALSOUND FM-Library / (C)Takeshi Abo.
+ *  http://www.valsound.com/
  */
 
 #include "opna.h"
@@ -20,3 +21,5 @@ const struct timbre timbre_lib[] = {
 	   18,  15,   0, 14,   2,  50,   0,   8,   0,   0,
 	   14,   2,   0, 14,   0,   0,   0,   4,   0,   0 },
 };
+
+int opna_ntimbres = sizeof(timbre_lib) / sizeof(timbre_lib[0]);
