@@ -26,7 +26,7 @@ Run
 
 Example
 -------
-This MML plays 'Sakura Sakura' (Japanese song).
+This example plays 'Sakura Sakura' (Japanese song).
 ```
 % ./opnaplay 't120 o4 l4 aab2 aab2 ab>c<b ab8a8f2 ecef ee8c8<b2> ab>c<b ab8a8f2 ecef ee8c8<b2> aab2 aab2 efb8a8f e1'
 ```
