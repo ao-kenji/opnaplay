@@ -16,7 +16,6 @@ pcex0 at cbus0
 
 Compile
 -------
-
 Build by 'make'.  The executable binary is 'opnaplay'.
 
 Run
@@ -36,10 +35,10 @@ Special Thanks
 --------------
 This program uses: 
 
-'A tiny MML parser' 
-Copyright (C) 2014-2015 Shinichiro Nakamura (CuBeatSystems)
+'A tiny MML parser'  
+Copyright (C) 2014-2015 Shinichiro Nakamura (CuBeatSystems)  
 http://www.cubeatsystems.com/firmware/tinymml/index.html
 
-FM sound parameters
-VALSOUND FM-Library / (C)Takeshi Abo.
+FM sound parameters  
+VALSOUND FM-Library / (C)Takeshi Abo.  
 http://www.valsound.com/
