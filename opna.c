@@ -78,10 +78,12 @@ opna_init(void)
 int
 opna_open(void)
 {
+	u_int8_t *sound_id, data;
+
 	pcexio_fd = open("/dev/pcexio", O_RDWR, 0600);
 	if (pcexio_fd == -1) {
 		perror("open");
-		return -1;
+		goto exit1;
 	}
 
 	pcexio_base = (u_int8_t *)mmap(NULL, 0x10000, PROT_READ | PROT_WRITE,
@@ -89,9 +91,19 @@ opna_open(void)
 
 	if (pcexio_base == MAP_FAILED) {
 		perror("mmap");
-		close(pcexio_fd);
-		return -1;
+		goto exit2;
 	}
+
+	/* check the existence of PC-9801-86 board */
+	sound_id = pcexio_base + 0xa460;
+	data = *sound_id;
+	if ((data & 0xf0) != 0x40) {
+		fprintf(stderr, "can not found PC-9801-86 board\n");
+		goto exit2;
+	}
+
+        /* enable YM2608 on PC-9801-86 board */
+        *sound_id = ((data & 0xfc) | 0x01);
 
 	opna_bi_reg = pcexio_base + 0x188;	
 	opna_bd_reg = pcexio_base + 0x18a;	
@@ -99,6 +111,10 @@ opna_open(void)
 	opna_ed_reg = pcexio_base + 0x18e;	
 
 	return pcexio_fd;
+exit2:
+	close(pcexio_fd);
+exit1:
+	return -1;
 }
 
 /*
