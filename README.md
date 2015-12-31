@@ -4,7 +4,7 @@ opnaplay
 opnaplay - A tiny YM2608(ONPA) FM-synth MML player on OpenBSD/luna88k
 
 This is my experimental program to use the YM2608(OPNA) FM-synth part of
-PC-9801-86 sound board on OpenBSD/luna88k.
+PC-9801-86 sound board on OpenBSD/luna88k.  It also runs with MELCO WSN-A[24]F.
 
 Preparation
 -----------
@@ -42,3 +42,7 @@ This program uses:
 FM sound parameters  
     VALSOUND FM-Library / (C)Takeshi Abo.  
     http://www.valsound.com/
+
+WSN-A[24]F initialization:
+    WSN-A2FのPCM音源をFreeBSDで使う
+    http://s-sasaji.ddo.jp/pcunix/bxpcm.htm

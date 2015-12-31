@@ -94,6 +94,11 @@ opna_open(void)
 		goto exit2;
 	}
 
+	/* if we find WSN-A[24]F, set it up */
+	data = *(pcexio_base + 0x51e3);
+	if (data == 0xc2)
+		*(pcexio_base + 0x57e3) = 0xf0;	/* sound ID = 0x40 */
+
 	/* check the existence of PC-9801-86 board */
 	sound_id = pcexio_base + 0xa460;
 	data = *sound_id;
